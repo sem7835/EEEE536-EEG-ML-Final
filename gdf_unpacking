@@ -1,0 +1,72 @@
+#Imports
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy import signal as sig
+from scipy.stats import ttest_ind
+import mne
+
+
+#set file path
+FILE_PATH = 'C:/Users/semee/Class/EEEE 536/Project/Data/A01T.gdf'
+EVAL_PATH = 'C:/Users/semee/Class/EEEE 536/Project/Data/A01E.gdf'
+eog = ['EOG-left', 'EOG-central', 'EOG-right']
+fs = 250
+
+#read raw data from gdf using mne
+file_raw = mne.io.read_raw_gdf(FILE_PATH, eog=eog)
+eval_raw = mne.io.read_raw_gdf(EVAL_PATH, eog=eog)
+
+#read events from the gdf annotation
+events, event_id = mne.events_from_annotations(file_raw)
+
+#convert raw to dataframe
+eeg_data = file_raw.to_data_frame()
+eeg_data = eeg_data.drop(eeg_data.columns[0], axis=1)
+eeg_data = eeg_data.drop(eeg_data.columns[-1], axis=1)
+eeg_data = eeg_data.drop(eeg_data.columns[-1], axis=1)
+eeg_data = eeg_data.drop(eeg_data.columns[-1], axis=1)
+eeg_data['event'] = 0
+
+
+#convert events to dataframe
+events_df = pd.DataFrame(events)
+events_df = events_df.drop(events_df.columns[1], axis=1)
+
+
+track = 0
+hold_size = len(eeg_data)
+
+hold_list = [0] * hold_size
+for i in events_df[0]:
+    time_check = i
+    hold_list[i] = events_df.at[track, 2]
+    track = track + 1
+eeg_data['event'] = hold_list
+
+
+#print(test)
+#test2 = eval_raw.to_data_frame()
+#print(eval_raw)
+
+#display first ten seconds of EEG
+#(retooled from Lab 4)
+#fig, axes = plt.subplots(len(test.columns), 1, figsize=(14, 12), sharex=True)
+#fig.suptitle('Raw EEG (First 10 Seconds)', fontsize=14, fontweight='bold')
+
+#t_end = min(10.0, test.shape[0] / fs)  # First 10 seconds
+#n_show = int(t_end * fs)
+#t = np.arange(n_show) / fs
+
+#for i, (ax, name) in enumerate(zip(axes, test.columns)):
+    #ax.plot(t, test[name][:n_show], linewidth=0.5, color=f'C{i}')
+    #ax.set_ylabel(f'{name}\n(µV)', fontsize=9)
+    #ax.set_xlim(0, t_end)
+
+#axes[-1].set_xlabel('Time (s)')
+#plt.tight_layout()
+#plt.show()
+
+#The above works to display the first 10 seconds of the dataframe for all channels
+#Commented out since this display is only really relevant for ensuring data is workable
